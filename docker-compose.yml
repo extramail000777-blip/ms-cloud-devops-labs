@@ -1,0 +1,31 @@
+
+services:
+  backend:
+    build: ./backend
+    environment:
+      PORT: 3000
+      DATA_FILE: /app/data/notes.json
+      CORS_ORIGIN: http://localhost:8080
+    volumes:
+      - notes-data:/app/data
+    ports:
+      - "3001:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:3000/health', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:3001
+    ports:
+      - "8080:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  notes-data:
