@@ -32,4 +32,8 @@ describe('sortNotes', () => {
     const newer = { id: '2', title: 'newer', body: '', createdAt: '2026-06-01T00:00:00.000Z' };
     expect(sortNotes([older, newer]).map((n) => n.id)).toEqual(['2', '1']);
   });
+
+  it('returns an empty array when there are no notes', () => {
+    expect(sortNotes([])).toEqual([]);
+  });
 });
