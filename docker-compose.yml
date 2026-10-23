@@ -8,8 +8,6 @@ services:
       CORS_ORIGIN: http://localhost:8080
     volumes:
       - notes-data:/app/data
-    ports:
-      - "3001:3000"
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:3000/health', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
       interval: 10s
@@ -20,12 +18,27 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_API_URL: http://localhost:3001
+        VITE_API_URL: /backend
     ports:
       - "8080:80"
     depends_on:
       backend:
         condition: service_healthy
 
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: notes
+      POSTGRES_USER: notes_user
+      POSTGRES_PASSWORD: local_dev_password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notes_user -d notes"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   notes-data:
+  postgres-data:
